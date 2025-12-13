@@ -31,6 +31,16 @@ std::string timestamp() {
   return oss.str();
 }
 
+Fl_Box* box(int x, int y, int w, int h, int label_size, const char* text) {
+  Fl_Box* box = new Fl_Box(x, y, w, h);
+  box->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
+  box->labelsize(label_size);
+  if (text) {
+    box->copy_label(text);
+  }
+  return box;
+}
+
 std::string search(FILE* pipe, const std::string& section, const std::string& key) {
   if (!pipe) {
     return "";
@@ -68,40 +78,22 @@ int main(int argc, char **argv) {
   Fl_Window *window = new Fl_Window(WINDOW_WIDTH, WINDOW_HEIGHT, "Project Seesaw");
   window->color(FL_WHITE);
 
-  Fl_Box *box_software_details = new Fl_Box(20, 10, 200, 40, "Software Details");
-  box_software_details->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
-  box_software_details->labelsize(20);
+  Fl_Box *box_software_details = box(20, 10, 200, 40, 20, "Software Details");
 
   std::string now = timestamp();
-  Fl_Box *box_software_date_left = new Fl_Box(20, 50, 200, 20, "Date/Time:");
-  box_software_date_left->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
-  box_software_date_left->labelsize(14);
-  Fl_Box *box_software_date_right = new Fl_Box(220, 50, 200, 20, now.c_str());
-  box_software_date_right->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
-  box_software_date_right->labelsize(14);
+  Fl_Box *box_software_date_left = box(20, 50, 200, 20, 14, "Date/Time:");
+  Fl_Box *box_software_date_right = box(220, 50, 200, 20, 14, now.c_str());
 
   temp = PRODUCT_NAME + ", " + PRODUCT_VERSION;
-  Fl_Box *box_software_version_left = new Fl_Box(20, 70, 200, 20, "Software Version:");
-  box_software_version_left->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
-  box_software_version_left->labelsize(14);
-  Fl_Box *box_software_version_right = new Fl_Box(220, 70, 200, 20);
-  box_software_version_right->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
-  box_software_version_right->labelsize(14);
-  box_software_version_right->copy_label(temp.c_str());
+  Fl_Box *box_software_version_left = box(20, 70, 200, 20, 14, "Software Version:");
+  Fl_Box *box_software_version_right = box(220, 70, 200, 20, 14, temp.c_str());
 
-  Fl_Box *box_hardware_details = new Fl_Box(20, 100, 200, 40, "Hardware Details");
-  box_hardware_details->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
-  box_hardware_details->labelsize(20);
+  Fl_Box *box_hardware_details = box(20, 100, 200, 40, 20, "Hardware Details");
 
   FILE* pipe = popen("sudo dmidecode", "r");
   temp = search(pipe, "System Information", "Manufacturer");
-  Fl_Box *box_hardware_manufacturer_left = new Fl_Box(20, 140, 200, 20, "Manufacturer:");
-  box_hardware_manufacturer_left->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
-  box_hardware_manufacturer_left->labelsize(14);
-  Fl_Box *box_hardware_manufacturer_right = new Fl_Box(220, 140, 200, 20);
-  box_hardware_manufacturer_right->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
-  box_hardware_manufacturer_right->labelsize(14);
-  box_hardware_manufacturer_right->copy_label(temp.c_str());
+  Fl_Box *box_hardware_manufacturer_left = box(20, 140, 200, 20, 14, "Manufacturer:");
+  Fl_Box *box_hardware_manufacturer_right = box(220, 140, 200, 20, 14, temp.c_str());
 
   pclose(pipe);
   window->end();
