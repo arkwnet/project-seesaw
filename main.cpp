@@ -15,20 +15,20 @@ const int WINDOW_WIDTH = 640;
 const int WINDOW_HEIGHT = 480;
 
 std::string timestamp() {
-    using namespace std::chrono;
-    auto now = system_clock::now();
-    std::time_t t = system_clock::to_time_t(now);
-    std::tm lt = *std::localtime(&t);
-    auto subseconds = duration_cast<milliseconds>(now.time_since_epoch()) % 1000;
-    std::ostringstream oss;
-    oss << std::put_time(&lt, "%Y-%m-%dT%H:%M:%S");
-    oss << "." << std::setw(3) << std::setfill('0') << subseconds.count();
-    char buf[8];
-    std::strftime(buf, sizeof(buf), "%z", &lt);
-    std::string tz(buf);
-    tz.insert(3, ":");
-    oss << tz;
-    return oss.str();
+  using namespace std::chrono;
+  auto now = system_clock::now();
+  std::time_t t = system_clock::to_time_t(now);
+  std::tm lt = *std::localtime(&t);
+  auto subseconds = duration_cast<milliseconds>(now.time_since_epoch()) % 1000;
+  std::ostringstream oss;
+  oss << std::put_time(&lt, "%Y-%m-%dT%H:%M:%S");
+  oss << "." << std::setw(3) << std::setfill('0') << subseconds.count();
+  char buf[8];
+  std::strftime(buf, sizeof(buf), "%z", &lt);
+  std::string tz(buf);
+  tz.insert(3, ":");
+  oss << tz;
+  return oss.str();
 }
 
 std::string search(FILE* pipe, const std::string& section, const std::string& key) {
@@ -39,26 +39,26 @@ std::string search(FILE* pipe, const std::string& section, const std::string& ke
   char buffer[256];
   bool in_target_handle = false;
   while (fgets(buffer, sizeof(buffer), pipe)) {
-      line = buffer;
-      if (!line.empty() && line[0] != '\t' && line.find(section) != std::string::npos) {
-        in_target_handle = true;
-        continue;
+    line = buffer;
+    if (!line.empty() && line[0] != '\t' && line.find(section) != std::string::npos) {
+      in_target_handle = true;
+      continue;
+    }
+    if (!line.empty() && line[0] != '\t' && in_target_handle) {
+      break;
+    }
+    if (in_target_handle) {
+      std::string label = "\t" + key + ":";
+      if (line.find(label) == 0) {
+        std::string value = line.substr(label.size());
+        size_t start = value.find_first_not_of(" \t");
+        size_t end = value.find_last_not_of(" \t");
+        if (start != std::string::npos && end != std::string::npos) {
+          value = value.substr(start, end - start + 1);
+        }
+        return value;
       }
-      if (!line.empty() && line[0] != '\t' && in_target_handle) {
-        break;
-      }
-      if (in_target_handle) {
-          std::string label = "\t" + key + ":";
-          if (line.find(label) == 0) {
-              std::string value = line.substr(label.size());
-              size_t start = value.find_first_not_of(" \t");
-              size_t end = value.find_last_not_of(" \t");
-              if (start != std::string::npos && end != std::string::npos) {
-                value = value.substr(start, end - start + 1);
-              }
-              return value;
-          }
-      }
+    }
   }
   return "";
 }
