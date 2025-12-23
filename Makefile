@@ -1,6 +1,6 @@
 CXX = g++
 CXXFLAGS =
-LDFLAGS = -lfltk
+LDFLAGS = -lfltk -lfltk_images
 TARGET = main
 SRCS = main.cpp
 
