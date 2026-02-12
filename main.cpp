@@ -42,15 +42,12 @@ Fl_Box* box(int x, int y, int w, int h, int label_size, const char* text) {
   return box;
 }
 
-std::string search(FILE* pipe, const std::string& section, const std::string& key) {
-  if (!pipe) {
-    return "";
-  }
+std::string search(std::istringstream& iss, const std::string& section, const std::string& key) {
+  iss.clear();
+  iss.seekg(0);
   std::string line;
-  char buffer[256];
   bool in_target_handle = false;
-  while (fgets(buffer, sizeof(buffer), pipe)) {
-    line = buffer;
+  while (std::getline(iss, line)) {
     if (!line.empty() && line[0] != '\t' && line.find(section) != std::string::npos) {
       in_target_handle = true;
       continue;
@@ -100,40 +97,49 @@ int main(int argc, char **argv) {
   Fl_Box *box_hardware_details = box(20, 190, 200, 40, 20, "Hardware Details");
 
   FILE* pipe = popen("sudo dmidecode", "r");
-  temp = search(pipe, "System Information", "Manufacturer");
-  Fl_Box *box_hardware_manufacturer_left = box(20, 230, 200, 20, 14, "Manufacturer:");
-  Fl_Box *box_hardware_manufacturer_right = box(220, 230, 200, 20, 14, temp.c_str());
-  temp = search(pipe, "Chassis Information", "Type");
-  Fl_Box *box_hardware_chassis_left = box(20, 250, 200, 20, 14, "Chassis type:");
-  Fl_Box *box_hardware_chassis_right = box(220, 250, 200, 20, 14, temp.c_str());
-  temp = search(pipe, "System Information", "SKU Number");
-  Fl_Box *box_hardware_model_left = box(20, 270, 200, 20, 14, "Model:");
-  Fl_Box *box_hardware_model_right = box(220, 270, 200, 20, 14, temp.c_str());
-  temp = search(pipe, "System Information", "Serial Number");
-  Fl_Box *box_hardware_serial_left = box(20, 290, 200, 20, 14, "Serial:");
-  Fl_Box *box_hardware_serial_right = box(220, 290, 200, 20, 14, temp.c_str());
-  temp = search(pipe, "System Information", "UUID");
-  Fl_Box *box_hardware_uuid_left = box(20, 310, 200, 20, 14, "UUID:");
-  Fl_Box *box_hardware_uuid_right = box(220, 310, 200, 20, 14, temp.c_str());
-  temp = search(pipe, "Chassis Information", "Asset Tag");
-  Fl_Box *box_hardware_tag_left = box(20, 330, 200, 20, 14, "Asset tag:");
-  Fl_Box *box_hardware_tag_right = box(220, 330, 200, 20, 14, temp.c_str());
-  temp = search(pipe, "Processor Information", "Version");
-  Fl_Box *box_hardware_processor_left = box(20, 350, 200, 20, 14, "Processor:");
-  Fl_Box *box_hardware_processor_right = box(220, 350, 200, 20, 14, temp.c_str());
-  temp = search(pipe, "Memory Device", "Size");
-  Fl_Box *box_hardware_memory_left = box(20, 370, 200, 20, 14, "Total memory:");
-  Fl_Box *box_hardware_memory_right = box(220, 370, 200, 20, 14, temp.c_str());
+  if (pipe) {
+    std::string all;
+    char buffer[256];
+    while (fgets(buffer, sizeof(buffer), pipe)) {
+      all += buffer;
+    }
+    pclose(pipe);
+    std::istringstream iss(all);
 
-  temp = search(pipe, "Base Board Information", "Manufacturer") + " / " + search(pipe, "Base Board Information", "Product Name");
-  Fl_Box *box_hardware_motherboard_left = box(20, 390, 200, 20, 14, "Motherboard:");
-  Fl_Box *box_hardware_motherboard_right = box(220, 390, 200, 20, 14, temp.c_str());
+    temp = search(iss, "System Information", "Manufacturer");
+    Fl_Box *box_hardware_manufacturer_left = box(20, 230, 200, 20, 14, "Manufacturer:");
+    Fl_Box *box_hardware_manufacturer_right = box(220, 230, 200, 20, 14, temp.c_str());
+    temp = search(iss, "Chassis Information", "Type");
+    Fl_Box *box_hardware_chassis_left = box(20, 250, 200, 20, 14, "Chassis type:");
+    Fl_Box *box_hardware_chassis_right = box(220, 250, 200, 20, 14, temp.c_str());
+    temp = search(iss, "System Information", "SKU Number");
+    Fl_Box *box_hardware_model_left = box(20, 270, 200, 20, 14, "Model:");
+    Fl_Box *box_hardware_model_right = box(220, 270, 200, 20, 14, temp.c_str());
+    temp = search(iss, "System Information", "Serial Number");
+    Fl_Box *box_hardware_serial_left = box(20, 290, 200, 20, 14, "Serial:");
+    Fl_Box *box_hardware_serial_right = box(220, 290, 200, 20, 14, temp.c_str());
+    temp = search(iss, "System Information", "UUID");
+    Fl_Box *box_hardware_uuid_left = box(20, 310, 200, 20, 14, "UUID:");
+    Fl_Box *box_hardware_uuid_right = box(220, 310, 200, 20, 14, temp.c_str());
+    temp = search(iss, "Chassis Information", "Asset Tag");
+    Fl_Box *box_hardware_tag_left = box(20, 330, 200, 20, 14, "Asset tag:");
+    Fl_Box *box_hardware_tag_right = box(220, 330, 200, 20, 14, temp.c_str());
+    temp = search(iss, "Processor Information", "Version");
+    Fl_Box *box_hardware_processor_left = box(20, 350, 200, 20, 14, "Processor:");
+    Fl_Box *box_hardware_processor_right = box(220, 350, 200, 20, 14, temp.c_str());
+    temp = search(iss, "Memory Device", "Size");
+    Fl_Box *box_hardware_memory_left = box(20, 370, 200, 20, 14, "Total memory:");
+    Fl_Box *box_hardware_memory_right = box(220, 370, 200, 20, 14, temp.c_str());
 
-  temp = search(pipe, "BIOS Information", "Vendor") + ", Version: " + search(pipe, "BIOS Information", "Version") + ", Date: " + search(pipe, "BIOS Information", "Release Date") + ", ROM size: " + search(pipe, "BIOS Information", "ROM Size");
-  Fl_Box *box_hardware_bios_left = box(20, 410, 200, 20, 14, "BIOS information:");
-  Fl_Box *box_hardware_bios_right = box(220, 410, 200, 20, 14, temp.c_str());
+    temp = search(iss, "Base Board Information", "Manufacturer") + " / " + search(iss, "Base Board Information", "Product Name");
+    Fl_Box *box_hardware_motherboard_left = box(20, 390, 200, 20, 14, "Motherboard:");
+    Fl_Box *box_hardware_motherboard_right = box(220, 390, 200, 20, 14, temp.c_str());
 
-  pclose(pipe);
+    temp = search(iss, "BIOS Information", "Vendor") + ", Version: " + search(iss, "BIOS Information", "Version") + ", Date: " + search(iss, "BIOS Information", "Release Date") + ", ROM size: " + search(iss, "BIOS Information", "ROM Size");
+    Fl_Box *box_hardware_bios_left = box(20, 410, 200, 20, 14, "BIOS information:");
+    Fl_Box *box_hardware_bios_right = box(220, 410, 200, 20, 14, temp.c_str());
+  }
+
   window->end();
   window->show(argc, argv);
   return Fl::run();
