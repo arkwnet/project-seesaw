@@ -52,8 +52,9 @@ std::string search(std::istringstream& iss, const std::string& section, const st
       in_target_handle = true;
       continue;
     }
-    if (!line.empty() && line[0] != '\t' && in_target_handle) {
-      break;
+    if (line.empty() && in_target_handle) {
+      in_target_handle = false;
+      continue;
     }
     if (in_target_handle) {
       std::string label = "\t" + key + ":";
@@ -64,7 +65,9 @@ std::string search(std::istringstream& iss, const std::string& section, const st
         if (start != std::string::npos && end != std::string::npos) {
           value = value.substr(start, end - start + 1);
         }
-        return value;
+        if (value.find("No Module Installed") == std::string::npos) {
+          return value;
+        }
       }
     }
   }
